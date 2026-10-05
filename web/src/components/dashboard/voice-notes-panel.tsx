@@ -2,6 +2,7 @@
 
 import { ArrowDownRight, ArrowRight, ArrowUpRight, ChevronDown, Mic2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { MetricLabel } from "@/components/dashboard/metric-help";
 import { VoiceNotesCharts } from "@/components/dashboard/voice-notes-charts";
 import {
   Accordion,
@@ -61,13 +62,17 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total tracks</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              <MetricLabel metricKey="voice_notes_total_tracks" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-bold">{data.totalTracks}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Plays (28d)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              <MetricLabel metricKey="voice_notes_plays_28d" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
             {data.plays28dTotal !== null ? formatCompact(data.plays28dTotal) : "—"}
@@ -75,7 +80,9 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active users (28d)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              <MetricLabel metricKey="voice_notes_active_users_28d" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
             {data.activeUsers28dTotal !== null ? formatCompact(data.activeUsers28dTotal) : "—"}
@@ -83,7 +90,9 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Artist playlists</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              <MetricLabel metricKey="voice_notes_artist_playlists" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-bold">{data.playlistCount}</CardContent>
         </Card>

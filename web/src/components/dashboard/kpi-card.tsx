@@ -1,4 +1,5 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { MetricLabel } from "@/components/dashboard/metric-help";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Kpi } from "@/lib/dashboard";
@@ -18,7 +19,9 @@ export function KpiCard({ kpi }: { kpi: Kpi }) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{kpi.label}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          <MetricLabel metricKey={kpi.id}>{kpi.label}</MetricLabel>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex items-end justify-between gap-2">

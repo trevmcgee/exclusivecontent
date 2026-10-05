@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,15 +13,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const title = "Exclusive Content Dashboard";
+const description =
+  "Account, Series and partner exclusives — one view of the KPIs that matter.";
+
 export const metadata: Metadata = {
-  title: "Exclusive Content Dashboard",
-  description: "Internal KPI dashboard for SoundCloud exclusive programming",
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

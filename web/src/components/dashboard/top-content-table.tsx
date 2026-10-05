@@ -1,4 +1,5 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { MetricLabel } from "@/components/dashboard/metric-help";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -44,9 +45,15 @@ export function TopContentTable({ rows }: { rows: TopContentRow[] }) {
               <TableHead>Title</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Published</TableHead>
-              <TableHead className="text-right">Plays (28d)</TableHead>
-              <TableHead className="text-right">Active users</TableHead>
-              <TableHead className="text-right">Change</TableHead>
+              <TableHead className="text-right">
+                <MetricLabel metricKey="top_content_plays" />
+              </TableHead>
+              <TableHead className="text-right">
+                <MetricLabel metricKey="top_content_active_users">Active users</MetricLabel>
+              </TableHead>
+              <TableHead className="text-right">
+                <MetricLabel metricKey="plays_change_28d">Change</MetricLabel>
+              </TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>

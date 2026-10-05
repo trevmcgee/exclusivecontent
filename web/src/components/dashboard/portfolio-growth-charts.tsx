@@ -9,11 +9,12 @@ import {
   Legend,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { MetricLabel } from "@/components/dashboard/metric-help";
+import { ChartResponsive } from "@/components/ui/chart-responsive";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DashboardData } from "@/lib/dashboard";
 import { formatCompact } from "@/lib/utils";
@@ -60,13 +61,15 @@ export function PortfolioGrowthCharts({ products }: Props) {
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Exclusive portfolio — daily growth</CardTitle>
+          <CardTitle>
+            <MetricLabel metricKey="portfolio_growth">Exclusive portfolio — daily growth</MetricLabel>
+          </CardTitle>
           <CardDescription>
             Combined plays and active users across all product lines (from KPI timeseries CSV)
           </CardDescription>
         </CardHeader>
-        <CardContent className="h-[320px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <CardContent>
+          <ChartResponsive height={320}>
             <LineChart data={portfolioDaily} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" vertical={false} />
               <XAxis
@@ -120,17 +123,19 @@ export function PortfolioGrowthCharts({ products }: Props) {
                 dot={false}
               />
             </LineChart>
-          </ResponsiveContainer>
+          </ChartResponsive>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Plays by product (28d)</CardTitle>
+          <CardTitle>
+            <MetricLabel metricKey="plays_28d">Plays by product (28d)</MetricLabel>
+          </CardTitle>
           <CardDescription>Compare scale across programming lines</CardDescription>
         </CardHeader>
-        <CardContent className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <CardContent>
+          <ChartResponsive height={280}>
             <BarChart data={productTotals} layout="vertical" margin={{ left: 8, right: 16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" horizontal={false} />
               <XAxis
@@ -154,17 +159,19 @@ export function PortfolioGrowthCharts({ products }: Props) {
               />
               <Bar dataKey="plays28d" fill="hsl(20 100% 50%)" radius={[0, 4, 4, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartResponsive>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Active users trend</CardTitle>
+          <CardTitle>
+            <MetricLabel metricKey="reach_28d">Active users trend</MetricLabel>
+          </CardTitle>
           <CardDescription>Portfolio reach — daily sum</CardDescription>
         </CardHeader>
-        <CardContent className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <CardContent>
+          <ChartResponsive height={280}>
             <AreaChart data={portfolioDaily} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="reachFill" x1="0" y1="0" x2="0" y2="1">
@@ -199,7 +206,7 @@ export function PortfolioGrowthCharts({ products }: Props) {
                 strokeWidth={2}
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartResponsive>
         </CardContent>
       </Card>
     </div>

@@ -16,6 +16,7 @@ export function ProductPanel({ product }: { product: ProductBlock }) {
       </div>
       <PlaysChart
         title="Daily plays"
+        titleMetricKey="daily_plays_reach"
         description="Daily plays and active users (reach) from supplied KPI timeseries CSV"
         data={product.timeseries}
       />

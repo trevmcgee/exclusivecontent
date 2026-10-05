@@ -6,11 +6,11 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ChartResponsive } from "@/components/ui/chart-responsive";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { VoiceNotesData } from "@/lib/dashboard";
 import { formatCompact } from "@/lib/utils";
@@ -72,8 +72,8 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
           <CardTitle>Voice Notes catalog growth</CardTitle>
           <CardDescription>Cumulative tracks published (from masterlist dates)</CardDescription>
         </CardHeader>
-        <CardContent className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <CardContent>
+          <ChartResponsive height={280}>
             <AreaChart data={catalogGrowth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="catalogFill" x1="0" y1="0" x2="0" y2="1">
@@ -105,7 +105,7 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
                 strokeWidth={2}
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartResponsive>
         </CardContent>
       </Card>
 
@@ -114,8 +114,8 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
           <CardTitle>New drops per week</CardTitle>
           <CardDescription>Publish velocity</CardDescription>
         </CardHeader>
-        <CardContent className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <CardContent>
+          <ChartResponsive height={280}>
             <BarChart data={publishWeekly.slice(-10)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" vertical={false} />
               <XAxis
@@ -129,7 +129,7 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="publishes" name="Tracks published" fill="hsl(20 100% 50%)" radius={[4, 4, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartResponsive>
         </CardContent>
       </Card>
 
@@ -139,8 +139,8 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
             <CardTitle>Top artists by plays (28d)</CardTitle>
             <CardDescription>Playlist-level totals from supplied / estimated metrics</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent>
+            <ChartResponsive height={300}>
               <BarChart data={topArtists} margin={{ top: 8, right: 8, left: 0, bottom: 48 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" vertical={false} />
                 <XAxis
@@ -165,7 +165,7 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
                 />
                 <Bar dataKey="plays" fill="hsl(20 100% 50%)" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartResponsive>
           </CardContent>
         </Card>
       ) : null}

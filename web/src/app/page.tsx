@@ -1,3 +1,4 @@
+import { CuratedHubsPanel } from "@/components/dashboard/curated-hubs-panel";
 import { PortfolioGrowthCharts } from "@/components/dashboard/portfolio-growth-charts";
 import { ProductPanel } from "@/components/dashboard/product-panel";
 import { OverviewCards } from "@/components/dashboard/overview-cards";
@@ -22,10 +23,10 @@ export default function HomePage() {
         <div>
           <p className="text-sm font-medium uppercase tracking-widest text-primary">SoundCloud</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
-            Exclusive content dashboard
+            Exclusive Content Dashboard
           </h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Account, Stories, Historias, and partner exclusives — one view of the KPIs that matter.
+            Account, Series and partner exclusives — one view of the KPIs that matter.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -38,6 +39,8 @@ export default function HomePage() {
         <OverviewCards overview={data.overview} />
 
         <PortfolioGrowthCharts products={data.products} />
+
+        {data.curatedHubs?.length ? <CuratedHubsPanel hubs={data.curatedHubs} /> : null}
 
         <Tabs
           defaultValue={data.voiceNotes ? "voice_notes" : data.products[0]?.id ?? "overview"}

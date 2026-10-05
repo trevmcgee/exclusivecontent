@@ -4,30 +4,34 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { MetricLabel } from "@/components/dashboard/metric-help";
+import { ChartResponsive } from "@/components/ui/chart-responsive";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TimeseriesPoint } from "@/lib/dashboard";
 import { formatCompact } from "@/lib/utils";
 
 type Props = {
   title: string;
+  titleMetricKey?: string;
   description?: string;
   data: TimeseriesPoint[];
 };
 
-export function PlaysChart({ title, description, data }: Props) {
+export function PlaysChart({ title, titleMetricKey, description, data }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>
+          {titleMetricKey ? <MetricLabel metricKey={titleMetricKey}>{title}</MetricLabel> : title}
+        </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <CardContent>
+        <ChartResponsive height={280}>
           <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="playsFill" x1="0" y1="0" x2="0" y2="1">
@@ -70,7 +74,7 @@ export function PlaysChart({ title, description, data }: Props) {
               strokeWidth={2}
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </ChartResponsive>
       </CardContent>
     </Card>
   );

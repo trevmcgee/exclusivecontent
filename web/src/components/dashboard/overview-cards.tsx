@@ -1,6 +1,8 @@
 import { Activity, Headphones, Layers, Percent } from "lucide-react";
+import { MetricLabel } from "@/components/dashboard/metric-help";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DashboardData } from "@/lib/dashboard";
+import { OVERVIEW_METRIC_KEYS } from "@/lib/metric-definitions";
 import { formatCompact, formatPercent } from "@/lib/utils";
 
 const icons = [Headphones, Activity, Layers, Percent] as const;
@@ -20,7 +22,9 @@ export function OverviewCards({ overview }: { overview: DashboardData["overview"
         return (
           <Card key={item.label} className="border-primary/20 bg-gradient-to-br from-card to-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                <MetricLabel metricKey={OVERVIEW_METRIC_KEYS[item.label] ?? item.label} />
+              </CardTitle>
               <Icon className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>

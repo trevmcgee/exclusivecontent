@@ -63,6 +63,37 @@ export type VoiceNotesPlaylist = {
   tracks: VoiceNoteTrack[];
 };
 
+export type CuratedHubTrack = {
+  title: string;
+  trackUrl: string;
+  trackUrn: string;
+  plays28d: number | null;
+  playsTotal: number | null;
+  activeUsers28d: number | null;
+  likes28d: number | null;
+  likesTotal: number | null;
+  shares28d: number | null;
+};
+
+export type CuratedHub = {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  trackCount: number;
+  tracksWithUrn: number;
+  plays28d: number | null;
+  playsTotal: number | null;
+  activeUsers28d: number | null;
+  likes28d: number | null;
+  likesTotal: number | null;
+  shares28d: number | null;
+  reposts28d: number | null;
+  hasMetrics: boolean;
+  metricsSource: string | null;
+  tracks: CuratedHubTrack[];
+};
+
 export type VoiceNotesData = {
   snapshotDate: string;
   totalTracks: number;
@@ -87,6 +118,7 @@ export type DashboardData = {
   products: ProductBlock[];
   topContent: TopContentRow[];
   voiceNotes?: VoiceNotesData;
+  curatedHubs?: CuratedHub[];
 };
 
 function resolveDataPath(): string {

@@ -1,6 +1,6 @@
-# Exclusive content dashboard (VibeCloud)
+# Exclusive Content Dashboard (VibeCloud)
 
-Internal dashboard for **SoundCloud Account**, **SoundCloud Stories**, **SoundCloud Historias**, and other exclusive programming KPIs. Built with [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/) patterns, deployed on **GCP Cloud Run** via the soundcloud-labs template.
+Account, Series and partner exclusives — one view of the KPIs that matter. Built with [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/) patterns, deployed on **GCP Cloud Run** via the soundcloud-labs template.
 
 **Live URL (after deploy):** `https://exclusivecontent.vibecloud.soundcloud.com`  
 Confirm in GitHub Actions → **Print service URL**.

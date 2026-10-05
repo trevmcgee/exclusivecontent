@@ -1,0 +1,192 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main, stage]
+  workflow_dispatch:
+
+env:
+  SERVICE_NAME: ${{ github.event.repository.name }}
+
+permissions:
+  contents: read
+  id-token: write   # required for Workload Identity Federation
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # On the `stage` branch, deployment values come from stage.env in the
+      # repo (committed, non-secret). On any other branch they come from
+      # GitHub org-level variables. Either way, downstream steps read them
+      # via ${{ env.X }} so the rest of the workflow doesn't care which.
+      - name: Load deployment variables
+        run: |
+          set -euo pipefail
+          if [ "${{ github.ref_name }}" = "stage" ] && [ -f stage.env ]; then
+            echo "Loading deployment vars from stage.env"
+            grep -Ev '^(#|$)' stage.env >> "$GITHUB_ENV"
+          else
+            echo "Loading deployment vars from GitHub org variables"
+            {
+              echo "GCP_PROJECT_ID=${{ vars.GCP_PROJECT_ID }}"
+              echo "REGION=${{ vars.REGION }}"
+              echo "REGISTRY=${{ vars.REGISTRY }}"
+              echo "REPOSITORY=${{ vars.REPOSITORY }}"
+              echo "WORKLOAD_IDENTITY_PROVIDER=${{ vars.WORKLOAD_IDENTITY_PROVIDER }}"
+              echo "SERVICE_ACCOUNT_EMAIL=${{ vars.SERVICE_ACCOUNT_EMAIL }}"
+              echo "IAP_CLIENT_ID=${{ vars.IAP_CLIENT_ID }}"
+              echo "GOOGLE_WORKSPACE_DOMAIN=${{ vars.GOOGLE_WORKSPACE_DOMAIN }}"
+              echo "APPS_DOMAIN=${{ vars.APPS_DOMAIN }}"
+              echo "LB_URL_MAP=${{ vars.LB_URL_MAP }}"
+            } >> "$GITHUB_ENV"
+          fi
+
+      - name: Authenticate to GCP (keyless)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          docker build -t $IMAGE .
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Build secrets flag
+        run: |
+          if [ -f app-secrets.env ] && grep -qv '^#' app-secrets.env 2>/dev/null; then
+            SECRETS=$(grep -v '^#' app-secrets.env | grep -v '^$' | paste -sd,)
+            echo "SECRETS_FLAG=--set-secrets ${SECRETS}" >> $GITHUB_ENV
+          else
+            echo "SECRETS_FLAG=" >> $GITHUB_ENV
+          fi
+
+      # Ingress restricted to load balancer only — IAP on the LB handles auth.
+      # --allow-unauthenticated is required because the LB does not add a Google
+      # auth token when forwarding to Cloud Run.
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image $IMAGE \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --ingress=internal-and-cloud-load-balancing \
+            ${{ env.SECRETS_FLAG }} \
+            --quiet
+
+      - name: Register service with load balancer
+        run: |
+          set -euo pipefail
+
+          IAP_SECRET=$(gcloud secrets versions access latest \
+            --secret=iap-oauth-client-secret \
+            --project=${{ env.GCP_PROJECT_ID }})
+
+          IAP_CLIENT_ID="${{ env.IAP_CLIENT_ID }}"
+
+          if [[ -z "$IAP_CLIENT_ID" ]]; then
+            echo "ERROR: IAP_CLIENT_ID is not set (check GitHub org variables or stage.env)." >&2
+            exit 1
+          fi
+          if [[ -z "$IAP_SECRET" ]]; then
+            echo "ERROR: Failed to retrieve iap-oauth-client-secret from Secret Manager." >&2
+            exit 1
+          fi
+
+          # Create serverless NEG pointing to this Cloud Run service
+          if ! gcloud compute network-endpoint-groups describe ${{ env.SERVICE_NAME }}-neg \
+              --region=${{ env.REGION }} --quiet 2>/dev/null; then
+            gcloud compute network-endpoint-groups create ${{ env.SERVICE_NAME }}-neg \
+              --region=${{ env.REGION }} \
+              --network-endpoint-type=serverless \
+              --cloud-run-service=${{ env.SERVICE_NAME }}
+          fi
+
+          # Create backend service with IAP
+          if ! gcloud compute backend-services describe ${{ env.SERVICE_NAME }}-backend \
+              --global --quiet 2>/dev/null; then
+            gcloud compute backend-services create ${{ env.SERVICE_NAME }}-backend \
+              --global \
+              --load-balancing-scheme=EXTERNAL_MANAGED
+          fi
+
+          # Enable / update IAP on the backend service (idempotent)
+          gcloud compute backend-services update ${{ env.SERVICE_NAME }}-backend \
+            --global \
+            --iap="enabled,oauth2-client-id=${IAP_CLIENT_ID},oauth2-client-secret=${IAP_SECRET}"
+
+          # Attach NEG to backend service
+          if ! gcloud compute backend-services describe ${{ env.SERVICE_NAME }}-backend \
+              --global --format='value(backends)' 2>/dev/null | grep -q ${{ env.SERVICE_NAME }}-neg; then
+            gcloud compute backend-services add-backend ${{ env.SERVICE_NAME }}-backend \
+              --global \
+              --network-endpoint-group=${{ env.SERVICE_NAME }}-neg \
+              --network-endpoint-group-region=${{ env.REGION }}
+          fi
+
+          # Add / update host rule in the URL map (Python handles idempotency)
+          python3 << 'PYEOF'
+          import subprocess, yaml, tempfile, os, sys
+
+          service   = "${{ env.SERVICE_NAME }}"
+          project   = "${{ env.GCP_PROJECT_ID }}"
+          domain    = "${{ env.APPS_DOMAIN }}"
+          urlmap    = "${{ env.LB_URL_MAP }}"
+
+          result = subprocess.run(
+              ["gcloud", "compute", "url-maps", "export", urlmap, "--global", "--format=yaml"],
+              capture_output=True, text=True, check=True
+          )
+          um = yaml.safe_load(result.stdout)
+
+          host         = f"{service}.{domain}"
+          matcher_name = f"{service}-matcher"
+          backend_url  = (
+              f"https://www.googleapis.com/compute/v1/projects/{project}"
+              f"/global/backendServices/{service}-backend"
+          )
+
+          # Remove stale entries for this service then re-add
+          um["hostRules"]    = [r for r in um.get("hostRules",    []) if host         not in r.get("hosts", [])]
+          um["pathMatchers"] = [m for m in um.get("pathMatchers", []) if m.get("name") != matcher_name]
+          um.setdefault("hostRules",    []).append({"hosts": [host], "pathMatcher": matcher_name})
+          um.setdefault("pathMatchers", []).append({"name": matcher_name, "defaultService": backend_url})
+
+          with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+              yaml.dump(um, f, default_flow_style=False)
+              tmpfile = f.name
+
+          subprocess.run(
+              ["gcloud", "compute", "url-maps", "import", urlmap, "--source", tmpfile, "--global", "--quiet"],
+              check=True
+          )
+          os.unlink(tmpfile)
+          print(f"URL map updated: {host} → {service}-backend")
+          PYEOF
+
+          # Grant IAP access to the whole company domain
+          gcloud iap web add-iam-policy-binding \
+            --resource-type=backend-services \
+            --service=${{ env.SERVICE_NAME }}-backend \
+            --member=domain:${{ env.GOOGLE_WORKSPACE_DOMAIN }} \
+            --role=roles/iap.httpsResourceAccessor
+
+      - name: Print service URL
+        run: |
+          echo "App URL: https://${{ env.SERVICE_NAME }}.${{ env.APPS_DOMAIN }}"
+          echo "(DNS must resolve *.${APPS_DOMAIN} to the load balancer IP)"

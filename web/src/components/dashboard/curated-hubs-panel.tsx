@@ -72,10 +72,9 @@ export function CuratedHubsPanel({ hubs }: { hubs: CuratedHub[] }) {
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Curated hubs</h2>
+        <h3 className="text-base font-semibold tracking-tight">Curated hubs</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Official playlists and album collections — expand a hub for track-level KPIs or open on
-          SoundCloud.
+          Official playlists and album collections — expand a hub for track-level KPIs.
         </p>
       </div>
       <Card className="border-primary/15">
@@ -85,7 +84,7 @@ export function CuratedHubsPanel({ hubs }: { hubs: CuratedHub[] }) {
             {hubs.length} destinations · collapsed by default
           </CardDescription>
         </CardHeader>
-        <Accordion type="multiple" className="px-5 pb-5">
+        <Accordion type="multiple" defaultValue={[]} className="px-5 pb-5">
           {hubs.map((hub) => {
             const lifetimePrimary = hubUsesLifetimePlays(hub);
             const headlinePlays = lifetimePrimary
@@ -156,8 +155,8 @@ export function CuratedHubsPanel({ hubs }: { hubs: CuratedHub[] }) {
                     ) : null}
                     {hub.id === "voice_notes_albums" ? (
                       <p className="text-xs text-muted-foreground">
-                        Full track list lives in the Voice Notes library above. Hub totals roll up
-                        when per-track BigQuery metrics are present.
+                        Full track list lives in the Voice Notes tab. Hub totals roll up when
+                        per-track BigQuery metrics are present.
                       </p>
                     ) : null}
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">

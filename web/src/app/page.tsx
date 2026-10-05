@@ -35,42 +35,57 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="space-y-8">
-        <OverviewCards overview={data.overview} />
-
-        <PortfolioGrowthCharts products={data.products} />
-
-        {data.curatedHubs?.length ? <CuratedHubsPanel hubs={data.curatedHubs} /> : null}
+      <section className="space-y-10">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">Portfolio overview</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              28-day rollup and daily trends from your KPI CSV exports.
+            </p>
+          </div>
+          <OverviewCards overview={data.overview} />
+          <PortfolioGrowthCharts products={data.products} />
+          {data.curatedHubs?.length ? <CuratedHubsPanel hubs={data.curatedHubs} /> : null}
+          <TopContentTable rows={data.topContent} />
+        </div>
 
         <Tabs
-          defaultValue={data.voiceNotes ? "voice_notes" : data.products[0]?.id ?? "overview"}
-          className="w-full"
+          defaultValue={
+            data.products.find((p) => p.id === "soundcloud_stories")?.id ??
+            data.products[0]?.id ??
+            "voice_notes"
+          }
+          className="w-full space-y-4"
         >
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">Programming detail</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Product KPIs and the Voice Notes library.
+            </p>
+          </div>
           <TabsList className="flex h-auto flex-wrap justify-start gap-1">
-            {data.voiceNotes ? (
-              <TabsTrigger value="voice_notes" className="text-xs sm:text-sm">
-                Voice Notes
-              </TabsTrigger>
-            ) : null}
             {data.products.map((p) => (
               <TabsTrigger key={p.id} value={p.id} className="text-xs sm:text-sm">
                 {p.name}
               </TabsTrigger>
             ))}
+            {data.voiceNotes ? (
+              <TabsTrigger value="voice_notes" className="text-xs sm:text-sm">
+                Voice Notes
+              </TabsTrigger>
+            ) : null}
           </TabsList>
-          {data.voiceNotes ? (
-            <TabsContent value="voice_notes">
-              <VoiceNotesPanel data={data.voiceNotes} />
-            </TabsContent>
-          ) : null}
           {data.products.map((p) => (
-            <TabsContent key={p.id} value={p.id}>
+            <TabsContent key={p.id} value={p.id} className="mt-4">
               <ProductPanel product={p} />
             </TabsContent>
           ))}
+          {data.voiceNotes ? (
+            <TabsContent value="voice_notes" className="mt-4">
+              <VoiceNotesPanel data={data.voiceNotes} />
+            </TabsContent>
+          ) : null}
         </Tabs>
-
-        <TopContentTable rows={data.topContent} />
       </section>
     </div>
   );

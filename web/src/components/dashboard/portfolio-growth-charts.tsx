@@ -57,8 +57,23 @@ export function PortfolioGrowthCharts({ products }: Props) {
     return { portfolioDaily, productTotals };
   }, [products]);
 
+  if (portfolioDaily.length === 0) {
+    return (
+      <Card className="border-dashed border-primary/25">
+        <CardHeader>
+          <CardTitle>Portfolio trends</CardTitle>
+          <CardDescription>
+            No daily series in this snapshot. Add rows to{" "}
+            <code className="text-xs">kpi_timeseries.csv</code> and rebuild{" "}
+            <code className="text-xs">dashboard.json</code>.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div id="portfolio-charts" className="grid gap-4 lg:grid-cols-2 scroll-mt-8">
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>
@@ -68,7 +83,7 @@ export function PortfolioGrowthCharts({ products }: Props) {
             Combined plays and active users across all product lines (from KPI timeseries CSV)
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <ChartResponsive height={320}>
             <LineChart data={portfolioDaily} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" vertical={false} />
@@ -134,7 +149,7 @@ export function PortfolioGrowthCharts({ products }: Props) {
           </CardTitle>
           <CardDescription>Compare scale across programming lines</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <ChartResponsive height={280}>
             <BarChart data={productTotals} layout="vertical" margin={{ left: 8, right: 16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" horizontal={false} />
@@ -170,7 +185,7 @@ export function PortfolioGrowthCharts({ products }: Props) {
           </CardTitle>
           <CardDescription>Portfolio reach — daily sum</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <ChartResponsive height={280}>
             <AreaChart data={portfolioDaily} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>

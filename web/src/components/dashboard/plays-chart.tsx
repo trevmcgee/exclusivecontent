@@ -59,7 +59,7 @@ export function PlaysChart({ title, description, data }: Props) {
               labelStyle={{ color: "hsl(0 0% 98%)" }}
               formatter={(value: number, name: string) => [
                 formatCompact(value),
-                name === "plays" ? "Plays" : "Reach",
+                name === "plays" ? "Plays" : "Active users",
               ]}
             />
             <Area

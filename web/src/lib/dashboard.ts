@@ -32,6 +32,9 @@ export type TopContentRow = {
   title: string;
   publishedAt: string;
   plays28d: number;
+  activeUsers28d: number;
+  playsChangePct: number;
+  playsTrend: Trend;
   engagementRate: number;
   status: string;
 };
@@ -43,6 +46,10 @@ export type VoiceNoteTrack = {
   publishedDate: string;
   trackPermalink: string;
   tags: string[];
+  plays28d: number | null;
+  activeUsers28d: number | null;
+  playsChangePct: number | null;
+  playsTrend: Trend;
 };
 
 export type VoiceNotesPlaylist = {
@@ -51,6 +58,8 @@ export type VoiceNotesPlaylist = {
   trackCount: number;
   publicCount: number;
   latestPublished: string;
+  plays28dTotal: number | null;
+  activeUsers28dTotal: number | null;
   tracks: VoiceNoteTrack[];
 };
 
@@ -59,6 +68,10 @@ export type VoiceNotesData = {
   totalTracks: number;
   playlistCount: number;
   publicTracks: number;
+  plays28dTotal: number | null;
+  activeUsers28dTotal: number | null;
+  hasMetrics: boolean;
+  metricsSource?: string | null;
   playlists: VoiceNotesPlaylist[];
 };
 
@@ -77,9 +90,20 @@ export type DashboardData = {
 };
 
 function resolveDataPath(): string {
-  const override = process.env.DASHBOARD_DATA_PATH;
-  if (override) return override;
-  return path.join(process.cwd(), "..", "data", "dashboard.json");
+  const candidates: string[] = [];
+  if (process.env.DASHBOARD_DATA_PATH) {
+    candidates.push(process.env.DASHBOARD_DATA_PATH);
+  }
+  candidates.push(path.join(process.cwd(), "..", "data", "dashboard.json"));
+  candidates.push(path.join(process.cwd(), "data", "dashboard.json"));
+
+  for (const filePath of candidates) {
+    if (fs.existsSync(filePath)) return filePath;
+  }
+
+  throw new Error(
+    "dashboard.json not found. Set DASHBOARD_DATA_PATH or run npm run dev from exclusivecontent/web.",
+  );
 }
 
 export function loadDashboard(): DashboardData {

@@ -1,3 +1,4 @@
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -9,14 +10,32 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TopContentRow } from "@/lib/dashboard";
-import { formatCompact, formatPercent } from "@/lib/utils";
+import { cn, formatCompact, formatDelta } from "@/lib/utils";
+
+function ChangeCell({ pct, trend }: { pct: number; trend: TopContentRow["playsTrend"] }) {
+  const Icon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : ArrowRight;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-end gap-0.5 tabular-nums",
+        trend === "up" && "text-emerald-400",
+        trend === "down" && "text-amber-400",
+      )}
+    >
+      <Icon className="h-3 w-3" />
+      {formatDelta(pct)}
+    </span>
+  );
+}
 
 export function TopContentTable({ rows }: { rows: TopContentRow[] }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Top exclusive content</CardTitle>
-        <CardDescription>Ranked by 28-day plays across all product lines</CardDescription>
+        <CardDescription>
+          Ranked by 28-day plays — active users from CSV or plays × engagement when not supplied
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -26,7 +45,8 @@ export function TopContentTable({ rows }: { rows: TopContentRow[] }) {
               <TableHead>Product</TableHead>
               <TableHead>Published</TableHead>
               <TableHead className="text-right">Plays (28d)</TableHead>
-              <TableHead className="text-right">Engagement</TableHead>
+              <TableHead className="text-right">Active users</TableHead>
+              <TableHead className="text-right">Change</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -40,7 +60,10 @@ export function TopContentTable({ rows }: { rows: TopContentRow[] }) {
                   {formatCompact(row.plays28d)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {formatPercent(row.engagementRate)}
+                  {formatCompact(row.activeUsers28d)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <ChangeCell pct={row.playsChangePct} trend={row.playsTrend} />
                 </TableCell>
                 <TableCell>
                   <Badge variant={row.status === "live" ? "success" : "muted"}>{row.status}</Badge>

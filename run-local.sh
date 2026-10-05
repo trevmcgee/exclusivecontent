@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+export PATH="/usr/local/bin:/opt/homebrew/bin:${PATH:-}"
+export DASHBOARD_DATA_PATH="$ROOT/data/dashboard.json"
+cd "$ROOT/web"
+if [[ ! -d node_modules ]]; then
+  npm install
+fi
+exec npm run dev

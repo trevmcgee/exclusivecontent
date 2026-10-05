@@ -1,3 +1,4 @@
+import { PortfolioGrowthCharts } from "@/components/dashboard/portfolio-growth-charts";
 import { ProductPanel } from "@/components/dashboard/product-panel";
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { TopContentTable } from "@/components/dashboard/top-content-table";
@@ -35,6 +36,8 @@ export default function HomePage() {
 
       <section className="space-y-8">
         <OverviewCards overview={data.overview} />
+
+        <PortfolioGrowthCharts products={data.products} />
 
         <Tabs
           defaultValue={data.voiceNotes ? "voice_notes" : data.products[0]?.id ?? "overview"}

@@ -16,7 +16,7 @@ export function ProductPanel({ product }: { product: ProductBlock }) {
       </div>
       <PlaysChart
         title="Daily plays"
-        description="Last 7 days from uploaded CSV / BigQuery export"
+        description="Daily plays and active users (reach) from supplied KPI timeseries CSV"
         data={product.timeseries}
       />
     </div>

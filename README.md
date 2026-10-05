@@ -1,47 +1,63 @@
-# vibecloud-template
+# Exclusive content dashboard (VibeCloud)
 
-> **Replace this file.** When you start building your app, ask your AI coding
-> assistant to replace this README with one that describes your specific project.
+Internal dashboard for **SoundCloud Account**, **SoundCloud Stories**, **SoundCloud Historias**, and other exclusive programming KPIs. Built with [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/) patterns, deployed on **GCP Cloud Run** via the soundcloud-labs template.
 
-This is the starting point for a VibeCloud app — an internal tool that deploys
-to GCP Cloud Run and is automatically accessible to everyone at soundcloud.com.
+**Live URL (after deploy):** `https://exclusivecontent.vibecloud.soundcloud.com`  
+Confirm in GitHub Actions → **Print service URL**.
 
-## Getting started
+## Architecture
 
-### 1. Create your repo
+| Layer | Location |
+|-------|----------|
+| **UI** | `web/` — Next.js App Router, shadcn-style components |
+| **Data** | `data/dashboard.json` — generated from CSVs (see knowledge-base pipeline) |
+| **Deploy** | Push to `main` → `.github/workflows/deploy.yml` (do not edit) |
 
-In the soundcloud-labs GitHub org, click **Use this template** and give your repo
-a short, descriptive name (e.g. `churn-dashboard`, `reviews-radar`).
+Authentication is **not** implemented in the app — VibeCloud IAP + Google Workspace restrict access to `@soundcloud.com`.
 
-### 2. Build your app
+## Run locally
 
-Open the repo in your AI coding assistant and describe what you want to build.
-The assistant will read `AGENTS.md` and know how to deploy it correctly.
+Requires Node 20+.
 
-The template includes a minimal Python/Flask starter app in `src/main.py`.
-Your assistant can replace this with whatever your app needs.
+```bash
+cd web
+npm install
+export DASHBOARD_DATA_PATH="$(cd .. && pwd)/data/dashboard.json"
+npm run dev
+```
 
-### 3. Deploy
+Open [http://localhost:3000](http://localhost:3000). Health check: [http://localhost:3000/healthz](http://localhost:3000/healthz).
 
-Push to `main`. The GitHub Actions workflow builds and deploys automatically.
-Find your app URL in the Actions log under **Print service URL**.
+Production-like run:
 
-Any @soundcloud.com Google account can access the app immediately — no extra
-setup required.
+```bash
+cd web && npm run build && PORT=8080 npm start
+```
 
-## What's in this template
+## Refresh data
 
-| File | Purpose |
-|---|---|
-| `src/main.py` | Starter Flask app — replace with your code |
-| `Dockerfile` | Builds the container image — update if you change the stack |
-| `requirements.txt` | Python dependencies |
-| `app-secrets.env` | Map Secret Manager secrets to env vars (see DEPLOY.md) |
-| `DEPLOY.md` | Full deployment and secrets guide |
-| `AGENTS.md` | Instructions for AI coding assistants |
-| `SECURITY.md` | What this platform can and can't access |
-| `.github/workflows/deploy.yml` | Managed by platform team — do not edit |
+1. Drop CSV exports into the knowledge-base folder  
+   `repos/analytics_creator_pod/personal/trevormcgee/exclusive-content-dashboard/csv/`
+2. Run the builder (writes `dashboard.json` here):
 
-## Getting help
+```bash
+python3 repos/analytics_creator_pod/personal/trevormcgee/exclusive-content-dashboard/build_dashboard.py \
+  --csv-dir repos/analytics_creator_pod/personal/trevormcgee/exclusive-content-dashboard/csv \
+  --out exclusivecontent/data/dashboard.json
+```
+
+3. Commit `data/dashboard.json` and push to `main`.
+
+See `DATA_CONTRACT.md` in the pipeline folder for CSV column definitions.
+
+## Deploy rules
+
+Read **`AGENTS.md`** and **`DEPLOY.md`** before pushing:
+
+- Deploy only through this repo’s GitHub Actions workflow
+- No secrets in git — use Secret Manager + `app-secrets.env` if needed later
+- Do not modify `.github/workflows/deploy.yml`
+
+## Help
 
 Slack: **#ai-support**

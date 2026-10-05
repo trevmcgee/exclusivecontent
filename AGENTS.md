@@ -3,6 +3,12 @@
 This project runs on GCP Cloud Run inside the `soundcloud-labs` GitHub org.
 Read this file before generating any deployment-related code or instructions.
 
+## App stack
+
+- **Frontend:** Next.js 15 in `web/` using shadcn/ui-style components (Radix + Tailwind).
+- **Data:** `data/dashboard.json` built from CSVs via the sc-data-knowledge-base pipeline (`repos/analytics_creator_pod/personal/trevormcgee/exclusive-content-dashboard/`).
+- **Container:** Root `Dockerfile` builds the Next.js standalone server on port **8080**.
+
 ## How deployment works
 
 - Push to `main` triggers `.github/workflows/deploy.yml` automatically

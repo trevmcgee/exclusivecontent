@@ -27,15 +27,17 @@ export function portfolioOverviewFromSeries(
     };
   }
 
-  const totalPlays28d = sumOptional(rows.map((r) => r.plays28d));
   const totalReach28d = sumOptional(rows.map((r) => r.activeUsers28d));
 
+  const playsForPortfolio = (row: SeriesPlayCount) =>
+    row.playsTotalStoriesTracks ?? row.playsTotal;
+  const plays28dForPortfolio = (row: SeriesPlayCount) =>
+    row.plays28dStoriesTracks ?? row.plays28d;
+
   return {
-    totalPlays: sumOptional(rows.map((r) => r.playsTotal)),
-    totalPlays28d: totalPlays28d,
+    totalPlays: sumOptional(rows.map(playsForPortfolio)),
+    totalPlays28d: sumOptional(rows.map(plays28dForPortfolio)),
     totalLikes: sumOptional(rows.map((r) => r.likesTotal)),
-    totalReach28d:
-      totalReach28d ??
-      (fallback.totalReach28d != null ? fallback.totalReach28d : null),
+    totalReach28d: totalReach28d,
   };
 }

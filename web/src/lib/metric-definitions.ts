@@ -10,14 +10,14 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
   total_plays: {
     title: "Total plays",
     description:
-      "Lifetime play count summed across every row in Play counts by series (curated hubs plus optional editorial series from series_plays.csv).",
-    source: "build_dashboard.py → sum(seriesPlayCounts.playsTotal)",
+      "Lifetime play count summed across every row in Play counts by series (curated hubs plus optional editorial series from series_plays.csv). For The Upload, portfolio total uses SoundCloud Stories track plays only—not artist mirror tracks in the playlist.",
+    source: "build_dashboard.py → sum(seriesPlayCounts portfolio plays)",
   },
   total_plays_28d: {
     title: "Total plays (28d)",
     description:
-      "Rolling 28-day plays summed across Play counts by series. When hub rows only have lifetime public counters, this may fall back to overview.csv until BigQuery 28-day export is wired.",
-    source: "sum(seriesPlayCounts.plays28d) or overview.csv → total_plays_28d",
+      "Rolling 28-day plays summed across Play counts by series (curated hubs). For The Upload, portfolio total uses soundcloud-stories track plays only—not artist mirror tracks in the playlist.",
+    source: "sum(seriesPlayCounts portfolio 28d); pipeline fetch_batched_hub_plays.py",
   },
   total_likes: {
     title: "Total likes",
@@ -28,9 +28,9 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
   total_reach: {
     title: "Total reach",
     description:
-      "28-day distinct active users summed across series rows when exported; otherwise portfolio reach from overview.csv.",
-    formula: "COUNT(DISTINCT listener) over 28d window (per series export)",
-    source: "sum(seriesPlayCounts.activeUsers28d) or overview.csv → total_reach_28d",
+      "28-day reach summed across Play counts by series (hub rollups of per-track distinct listeners from BigQuery). Shows — until reach export runs in refresh.py.",
+    formula: "SUM(hub activeUsers28d); tracks use COUNT(DISTINCT listener) on trusted 30s+ plays",
+    source: "sum(seriesPlayCounts.activeUsers28d); pipeline fetch_track_reach_28d.py",
   },
   reach_28d: {
     title: "Reach (28d)",
@@ -175,10 +175,28 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
     source: "sc-corpus.views_daily.track_metrics via curated_hubs_metrics.csv / voice_notes_metrics.csv",
   },
   hub_plays_total: {
-    title: "Total plays",
+    title: "Total playlist plays",
     description:
-      "Lifetime play count summed across hub tracks. For The Booth interim data this comes from SoundCloud public playback counters (not a 28-day window).",
+      "Lifetime play count summed across every track listed on the playlist (SoundCloud public playback counters). For The Upload this includes Stories episodes and linked artist tracks.",
     source: "curated_hubs_metrics.csv → plays_lifetime / fetch_booth_public_metrics.py",
+  },
+  upload_stories_track_plays_total: {
+    title: "Stories track plays (lifetime)",
+    description:
+      "Lifetime plays on soundcloud-stories permalinks in The Upload playlist only—excludes artist-hosted mirror tracks.",
+    source: "curated_hubs_metrics.csv filtered to soundcloud-stories track URLs",
+  },
+  series_playlist_plays_lifetime: {
+    title: "Playlist plays (lifetime)",
+    description:
+      "Sum of public lifetime plays for all tracks on the playlist. The Upload lists both Stories and artist tracks.",
+    source: "seriesPlayCounts.playsTotal",
+  },
+  series_stories_track_plays_lifetime: {
+    title: "Stories track plays (lifetime)",
+    description:
+      "Sum of public lifetime plays for soundcloud-stories tracks on The Upload playlist only.",
+    source: "seriesPlayCounts.playsTotalStoriesTracks",
   },
   hub_likes_total: {
     title: "Likes (lifetime)",

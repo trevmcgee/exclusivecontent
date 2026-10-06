@@ -53,6 +53,7 @@ export function SeriesPlayCountsTable({
   }, [tableRows, filter, query]);
 
   const estimateCount = tableRows.filter((r) => r.metricsSource === "portfolio_estimate").length;
+  const showUploadPlaySplit = tableRows.some((r) => r.playsTotalStoriesTracks != null);
 
   if (!tableRows.length) return null;
 
@@ -111,14 +112,32 @@ export function SeriesPlayCountsTable({
                 <TableHead className="text-right">
                   <MetricLabel metricKey="top_content_plays">Plays (28d)</MetricLabel>
                 </TableHead>
-                <TableHead className="text-right">Plays (lifetime)</TableHead>
+                <TableHead className="text-right">
+                  {showUploadPlaySplit ? (
+                    <MetricLabel metricKey="series_playlist_plays_lifetime">
+                      Playlist plays (lifetime)
+                    </MetricLabel>
+                  ) : (
+                    "Plays (lifetime)"
+                  )}
+                </TableHead>
+                {showUploadPlaySplit ? (
+                  <TableHead className="text-right">
+                    <MetricLabel metricKey="series_stories_track_plays_lifetime">
+                      Stories track plays (lifetime)
+                    </MetricLabel>
+                  </TableHead>
+                ) : null}
                 <TableHead>Source</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={showUploadPlaySplit ? 7 : 6}
+                    className="text-center text-muted-foreground"
+                  >
                     No series match this filter.
                   </TableCell>
                 </TableRow>
@@ -136,6 +155,13 @@ export function SeriesPlayCountsTable({
                     <TableCell className="text-right tabular-nums">
                       {row.playsTotal !== null ? formatCompact(row.playsTotal) : "—"}
                     </TableCell>
+                    {showUploadPlaySplit ? (
+                      <TableCell className="text-right tabular-nums">
+                        {row.playsTotalStoriesTracks != null
+                          ? formatCompact(row.playsTotalStoriesTracks)
+                          : "—"}
+                      </TableCell>
+                    ) : null}
                     <TableCell className="text-xs text-muted-foreground">
                       {row.metricsSource ?? "—"}
                     </TableCell>

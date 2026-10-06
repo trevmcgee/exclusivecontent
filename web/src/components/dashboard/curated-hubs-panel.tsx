@@ -106,6 +106,7 @@ export function CuratedHubsPanel({
         >
           {hubs.map((hub) => {
             const lifetimePrimary = hubUsesLifetimePlays(hub);
+            const uploadPlaySplit = hub.playsTotalStoriesTracks != null;
             const headlinePlays = lifetimePrimary
               ? hub.playsTotal ?? hub.plays28d
               : hub.plays28d ?? hub.playsTotal;
@@ -146,7 +147,26 @@ export function CuratedHubsPanel({
                       </div>
                     </div>
                     <div className="text-xs font-normal text-muted-foreground sm:text-right">
-                      {headlinePlays != null ? (
+                      {uploadPlaySplit && headlinePlays != null ? (
+                        <>
+                          <span className="block tabular-nums">
+                            {formatCompact(headlinePlays)} playlist plays (lifetime)
+                          </span>
+                          <span className="block tabular-nums">
+                            {formatCompact(hub.playsTotalStoriesTracks!)} Stories track plays
+                          </span>
+                          {hub.plays28d != null ? (
+                            <span className="block tabular-nums">
+                              {formatCompact(hub.plays28d)} playlist plays (28d)
+                            </span>
+                          ) : null}
+                          {hub.plays28dStoriesTracks != null ? (
+                            <span className="block tabular-nums">
+                              {formatCompact(hub.plays28dStoriesTracks)} Stories track plays (28d)
+                            </span>
+                          ) : null}
+                        </>
+                      ) : headlinePlays != null ? (
                         <span className="block tabular-nums">
                           {formatCompact(headlinePlays)}{" "}
                           {lifetimePrimary && hub.playsTotal != null ? "total plays" : "plays (28d)"}
@@ -170,6 +190,9 @@ export function CuratedHubsPanel({
                         Play and like totals are SoundCloud public lifetime counters for tracks
                         visible in the playlist embed. Run BigQuery export when slot time allows for
                         audited 28-day metrics.
+                        {uploadPlaySplit
+                          ? " The Upload reports playlist-wide track sums separately from soundcloud-stories permalinks only."
+                          : null}
                       </p>
                     ) : null}
                     {hub.id === "voice_notes_albums" && voiceNotes ? (
@@ -184,6 +207,12 @@ export function CuratedHubsPanel({
                         metricKey={lifetimePrimary ? "hub_plays_total" : "hub_plays_28d"}
                         value={headlinePlays}
                       />
+                      {uploadPlaySplit ? (
+                        <MetricCell
+                          metricKey="upload_stories_track_plays_total"
+                          value={hub.playsTotalStoriesTracks}
+                        />
+                      ) : null}
                       {!lifetimePrimary && hub.playsTotal != null ? (
                         <MetricCell metricKey="hub_plays_total" value={hub.playsTotal} />
                       ) : null}

@@ -27,8 +27,8 @@ export default function HomePage() {
         "overview-cards": (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Totals summed from Play counts by series (curated hubs and editorial rows). Reach
-              uses 28-day active users when exported; otherwise portfolio CSV fallback.
+              Totals summed from Play counts by series: lifetime plays/likes (public counters),
+              28-day plays and reach (BigQuery). Run pipeline REFRESH to update.
             </p>
             <OverviewCards overview={data.overview} seriesPlayCounts={data.seriesPlayCounts} />
           </div>

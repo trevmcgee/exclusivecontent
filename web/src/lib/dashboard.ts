@@ -87,7 +87,9 @@ export type CuratedHub = {
   trackCount: number;
   tracksWithUrn: number;
   plays28d: number | null;
+  plays28dStoriesTracks?: number | null;
   playsTotal: number | null;
+  playsTotalStoriesTracks?: number | null;
   activeUsers28d: number | null;
   likes28d: number | null;
   likesTotal: number | null;
@@ -119,7 +121,9 @@ export type SeriesPlayCount = {
   productLabel: string | null;
   trackCount: number;
   plays28d: number | null;
+  plays28dStoriesTracks?: number | null;
   playsTotal: number | null;
+  playsTotalStoriesTracks?: number | null;
   likes28d?: number | null;
   likesTotal?: number | null;
   activeUsers28d: number | null;

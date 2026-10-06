@@ -103,7 +103,7 @@ export function SignupsResurrectionsPanel({
     return (
       <Card className={embeddedInModule ? "border-border/60 shadow-none" : "border-dashed border-primary/25"}>
         <CardHeader>
-          <CardTitle>Signups & resurrections</CardTitle>
+          <CardTitle>Signups, resurrections, and subscriptions</CardTitle>
           <CardDescription>
             Run{" "}
             <code className="text-xs">fetch_signups_resurrections.py</code> (batched BigQuery) or import

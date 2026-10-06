@@ -1,5 +1,5 @@
 export const LAYOUT_STORAGE_KEY = "exclusive-dashboard-section-order-v1";
-export const EXPAND_STORAGE_KEY = "exclusive-dashboard-section-expand-v1";
+export const EXPAND_STORAGE_KEY = "exclusive-dashboard-section-expand-v2";
 
 export type DashboardSectionId =
   | "overview-cards"
@@ -23,7 +23,7 @@ export const SECTION_LABELS: Record<DashboardSectionId, string> = {
   "series-plays": "Play counts by series",
   "growth-charts": "Curated series growth",
   "curated-hubs": "Curated hubs",
-  "signups-resurrections": "Signups & resurrections",
+  "signups-resurrections": "Signups, resurrections, and subscriptions",
   "top-content": "Top exclusive content",
 };
 
@@ -33,15 +33,16 @@ export const SECTION_DISPLAY_TITLES: Record<DashboardSectionId, string> = {
   "series-plays": "Play counts by series",
   "growth-charts": "Curated series growth",
   "curated-hubs": "Curated hubs",
-  "signups-resurrections": "Signups & resurrections",
+  "signups-resurrections": "Signups, resurrections, and subscriptions",
   "top-content": "Top exclusive content",
 };
 
+/** Default collapse state for every visitor (v2 storage key resets prior browser saves). */
 export const DEFAULT_SECTION_EXPANDED: Record<DashboardSectionId, boolean> = {
   "overview-cards": true,
-  "series-plays": true,
+  "series-plays": false,
   "growth-charts": false,
-  "curated-hubs": true,
+  "curated-hubs": false,
   "signups-resurrections": false,
   "top-content": false,
 };

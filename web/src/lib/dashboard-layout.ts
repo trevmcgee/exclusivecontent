@@ -6,35 +6,35 @@ export type DashboardSectionId =
   | "series-plays"
   | "growth-charts"
   | "curated-hubs"
-  | "top-content"
-  | "programming-detail";
+  | "signups-resurrections"
+  | "top-content";
 
 export const DEFAULT_SECTION_ORDER: DashboardSectionId[] = [
   "overview-cards",
   "series-plays",
   "growth-charts",
   "curated-hubs",
+  "signups-resurrections",
   "top-content",
-  "programming-detail",
 ];
 
 export const SECTION_LABELS: Record<DashboardSectionId, string> = {
   "overview-cards": "Portfolio KPI cards",
   "series-plays": "Play counts by series",
-  "growth-charts": "Portfolio growth charts",
+  "growth-charts": "Curated series growth",
   "curated-hubs": "Curated hubs",
+  "signups-resurrections": "Signups & resurrections",
   "top-content": "Top exclusive content",
-  "programming-detail": "Programming detail (product tabs)",
 };
 
 /** Titles shown on collapsible module headers. */
 export const SECTION_DISPLAY_TITLES: Record<DashboardSectionId, string> = {
   "overview-cards": "Portfolio overview",
   "series-plays": "Play counts by series",
-  "growth-charts": "Portfolio growth charts",
+  "growth-charts": "Curated series growth",
   "curated-hubs": "Curated hubs",
+  "signups-resurrections": "Signups & resurrections",
   "top-content": "Top exclusive content",
-  "programming-detail": "Programming detail",
 };
 
 export const DEFAULT_SECTION_EXPANDED: Record<DashboardSectionId, boolean> = {
@@ -42,8 +42,8 @@ export const DEFAULT_SECTION_EXPANDED: Record<DashboardSectionId, boolean> = {
   "series-plays": true,
   "growth-charts": false,
   "curated-hubs": true,
+  "signups-resurrections": false,
   "top-content": false,
-  "programming-detail": false,
 };
 
 export function parseStoredExpanded(raw: string | null): Record<DashboardSectionId, boolean> {
@@ -52,6 +52,10 @@ export function parseStoredExpanded(raw: string | null): Record<DashboardSection
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (typeof parsed !== "object" || parsed === null) return base;
+    const legacy = (parsed as Record<string, unknown>)["subscription-growth"];
+    if (typeof legacy === "boolean" && base["signups-resurrections"] === DEFAULT_SECTION_EXPANDED["signups-resurrections"]) {
+      base["signups-resurrections"] = legacy;
+    }
     for (const id of DEFAULT_SECTION_ORDER) {
       const val = (parsed as Record<string, unknown>)[id];
       if (typeof val === "boolean") base[id] = val;
@@ -68,7 +72,10 @@ export function parseStoredOrder(raw: string | null): DashboardSectionId[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [...DEFAULT_SECTION_ORDER];
     const allowed = new Set(DEFAULT_SECTION_ORDER);
-    const filtered = parsed.filter(
+    const normalized = parsed.map((id) =>
+      id === "subscription-growth" ? "signups-resurrections" : id,
+    );
+    const filtered = normalized.filter(
       (id): id is DashboardSectionId =>
         typeof id === "string" && allowed.has(id as DashboardSectionId),
     );

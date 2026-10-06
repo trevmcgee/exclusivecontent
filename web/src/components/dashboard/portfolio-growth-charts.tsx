@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -16,7 +14,7 @@ import {
 import { MetricLabel } from "@/components/dashboard/metric-help";
 import { ChartResponsive } from "@/components/ui/chart-responsive";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { DashboardData } from "@/lib/dashboard";
+import type { CuratedSeriesGrowth, SeriesPlayCount } from "@/lib/dashboard";
 import { formatCompact } from "@/lib/utils";
 import { useMemo } from "react";
 
@@ -26,85 +24,128 @@ const tooltipStyle = {
   borderRadius: 8,
 };
 
+const SERIES_COLORS = [
+  "hsl(20 100% 50%)",
+  "hsl(210 90% 60%)",
+  "hsl(140 55% 48%)",
+  "hsl(280 65% 62%)",
+];
+
 type Props = {
-  products: DashboardData["products"];
+  series: CuratedSeriesGrowth[] | undefined;
+  seriesPlayCounts?: SeriesPlayCount[];
 };
 
-export function PortfolioGrowthCharts({ products }: Props) {
-  const { portfolioDaily, productTotals } = useMemo(() => {
-    const byDate = new Map<string, { date: string; plays: number; reach: number }>();
-    for (const product of products) {
-      for (const point of product.timeseries) {
-        const existing = byDate.get(point.date) ?? { date: point.date, plays: 0, reach: 0 };
-        existing.plays += point.plays;
-        existing.reach += point.reach;
-        byDate.set(point.date, existing);
+export function PortfolioGrowthCharts({ series, seriesPlayCounts }: Props) {
+  const { chartRows, seriesKeys, lifetimeTotals } = useMemo(() => {
+    const rows = series ?? [];
+    if (!rows.length) {
+      return { chartRows: [], seriesKeys: [] as string[], lifetimeTotals: [] as { name: string; total: number }[] };
+    }
+
+    const keys = rows.map((s) => s.id);
+    const maxDay = Math.max(...rows.flatMap((s) => s.points.map((p) => p.dayIndex)), 0);
+    const byDay = new Map<number, Record<string, number | string>>();
+
+    for (const s of rows) {
+      for (const point of s.points) {
+        const row = byDay.get(point.dayIndex) ?? { dayIndex: point.dayIndex };
+        row[s.id] = point.cumulativePlays;
+        byDay.set(point.dayIndex, row);
       }
     }
-    const portfolioDaily = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 
-    const productTotals = products
-      .map((p) => {
-        const playsKpi = p.kpis.find((k) => k.id === "plays_28d");
-        return {
-          name: p.name.replace("SoundCloud ", ""),
-          plays28d: playsKpi?.value ?? 0,
-          change: playsKpi?.deltaPct ?? 0,
-        };
-      })
-      .sort((a, b) => b.plays28d - a.plays28d);
+    for (let d = 0; d <= maxDay; d += 1) {
+      if (!byDay.has(d)) {
+        byDay.set(d, { dayIndex: d });
+      }
+    }
 
-    return { portfolioDaily, productTotals };
-  }, [products]);
+    let chartRows = [...byDay.values()].sort(
+      (a, b) => (a.dayIndex as number) - (b.dayIndex as number),
+    );
 
-  if (portfolioDaily.length === 0) {
+    for (const key of keys) {
+      let last: number | undefined;
+      let started = false;
+      chartRows = chartRows.map((row) => {
+        const v = row[key];
+        if (typeof v === "number") {
+          started = true;
+          last = v;
+          return row;
+        }
+        if (started && last !== undefined) {
+          return { ...row, [key]: last };
+        }
+        return row;
+      });
+    }
+
+    const playCountByHub = new Map(
+      (seriesPlayCounts ?? []).map((r) => [r.id.replace(/^hub-/, ""), r]),
+    );
+
+    const lifetimeTotals = rows.map((s) => {
+      const row = playCountByHub.get(s.id);
+      const total =
+        row?.playsTotalStoriesTracks ?? row?.playsTotal ?? s.points.at(-1)?.cumulativePlays ?? 0;
+      return { name: s.name.replace(" (albums hub)", ""), total };
+    });
+
+    return { chartRows, seriesKeys: keys, lifetimeTotals };
+  }, [series, seriesPlayCounts]);
+
+  if (!series?.length) {
     return (
       <Card className="border-dashed border-primary/25">
         <CardHeader>
-          <CardTitle>Portfolio trends</CardTitle>
+          <CardTitle>Curated series growth</CardTitle>
           <CardDescription>
-            No daily series in this snapshot. Add rows to{" "}
-            <code className="text-xs">kpi_timeseries.csv</code> and rebuild{" "}
-            <code className="text-xs">dashboard.json</code>.
+            Rebuild <code className="text-xs">dashboard.json</code> after curated hub metrics are
+            present to model cumulative plays from each series launch.
           </CardDescription>
         </CardHeader>
       </Card>
     );
   }
 
+  const nameById = Object.fromEntries(series.map((s) => [s.id, s.name]));
+
   return (
     <div id="portfolio-charts" className="grid gap-4 lg:grid-cols-2 scroll-mt-8">
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>
-            <MetricLabel metricKey="portfolio_growth">Exclusive portfolio — daily growth</MetricLabel>
+            <MetricLabel metricKey="curated_series_growth">
+              Curated series — cumulative plays since launch
+            </MetricLabel>
           </CardTitle>
           <CardDescription>
-            Combined plays and active users across all product lines (from KPI timeseries CSV)
+            Weekly points from each series start date through the snapshot. The Upload uses
+            soundcloud-stories tracks only; other hubs use all playlist tracks. Per-track lifetime
+            plays are spread linearly from publish (or estimated publish) to today when audited
+            daily history is unavailable.
           </CardDescription>
         </CardHeader>
         <CardContent className="min-w-0">
           <ChartResponsive height={320}>
-            <LineChart data={portfolioDaily} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+            <LineChart data={chartRows} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" vertical={false} />
               <XAxis
-                dataKey="date"
+                dataKey="dayIndex"
                 tick={{ fill: "hsl(240 5% 64%)", fontSize: 11 }}
-                tickFormatter={(v) => String(v).slice(5)}
                 axisLine={false}
                 tickLine={false}
+                label={{
+                  value: "Days since series start",
+                  position: "insideBottom",
+                  offset: -2,
+                  fill: "hsl(240 5% 64%)",
+                  fontSize: 11,
+                }}
               />
               <YAxis
-                yAxisId="plays"
-                tick={{ fill: "hsl(240 5% 64%)", fontSize: 11 }}
-                tickFormatter={(v) => formatCompact(v as number)}
-                axisLine={false}
-                tickLine={false}
-                width={52}
-              />
-              <YAxis
-                yAxisId="reach"
-                orientation="right"
                 tick={{ fill: "hsl(240 5% 64%)", fontSize: 11 }}
                 tickFormatter={(v) => formatCompact(v as number)}
                 axisLine={false}
@@ -113,45 +154,44 @@ export function PortfolioGrowthCharts({ products }: Props) {
               />
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(value: number, name: string) => [
+                formatter={(value: number, key: string) => [
                   formatCompact(value),
-                  name === "plays" ? "Plays" : "Active users",
+                  nameById[key] ?? key,
                 ]}
+                labelFormatter={(day) => `Day ${day}`}
               />
-              <Legend />
-              <Line
-                yAxisId="plays"
-                type="monotone"
-                dataKey="plays"
-                name="Plays"
-                stroke="hsl(20 100% 50%)"
-                strokeWidth={2}
-                dot={false}
+              <Legend
+                formatter={(value) => nameById[value] ?? value}
               />
-              <Line
-                yAxisId="reach"
-                type="monotone"
-                dataKey="reach"
-                name="Active users"
-                stroke="hsl(210 90% 60%)"
-                strokeWidth={2}
-                dot={false}
-              />
+              {seriesKeys.map((key, index) => (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  name={key}
+                  stroke={SERIES_COLORS[index % SERIES_COLORS.length]}
+                  strokeWidth={2}
+                  dot={false}
+                  connectNulls
+                />
+              ))}
             </LineChart>
           </ChartResponsive>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>
-            <MetricLabel metricKey="plays_28d">Plays by product (28d)</MetricLabel>
+            <MetricLabel metricKey="curated_series_lifetime_total">
+              Lifetime plays by curated series
+            </MetricLabel>
           </CardTitle>
-          <CardDescription>Compare scale across programming lines</CardDescription>
+          <CardDescription>End-of-curve totals aligned with Play counts by series</CardDescription>
         </CardHeader>
         <CardContent className="min-w-0">
           <ChartResponsive height={280}>
-            <BarChart data={productTotals} layout="vertical" margin={{ left: 8, right: 16 }}>
+            <BarChart data={lifetimeTotals} layout="vertical" margin={{ left: 8, right: 16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" horizontal={false} />
               <XAxis
                 type="number"
@@ -163,64 +203,17 @@ export function PortfolioGrowthCharts({ products }: Props) {
               <YAxis
                 type="category"
                 dataKey="name"
-                width={100}
+                width={120}
                 tick={{ fill: "hsl(240 5% 64%)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(value: number) => [formatCompact(value), "Plays (28d)"]}
+                formatter={(value: number) => [formatCompact(value), "Lifetime plays"]}
               />
-              <Bar dataKey="plays28d" fill="hsl(20 100% 50%)" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="total" fill="hsl(20 100% 50%)" radius={[0, 4, 4, 0]} />
             </BarChart>
-          </ChartResponsive>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <MetricLabel metricKey="reach_28d">Active users trend</MetricLabel>
-          </CardTitle>
-          <CardDescription>Portfolio reach — daily sum</CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0">
-          <ChartResponsive height={280}>
-            <AreaChart data={portfolioDaily} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="reachFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(210 90% 60%)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(210 90% 60%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 6% 18%)" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "hsl(240 5% 64%)", fontSize: 11 }}
-                tickFormatter={(v) => String(v).slice(5)}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: "hsl(240 5% 64%)", fontSize: 11 }}
-                tickFormatter={(v) => formatCompact(v as number)}
-                axisLine={false}
-                tickLine={false}
-                width={48}
-              />
-              <Tooltip
-                contentStyle={tooltipStyle}
-                formatter={(value: number) => [formatCompact(value), "Active users"]}
-              />
-              <Area
-                type="monotone"
-                dataKey="reach"
-                stroke="hsl(210 90% 60%)"
-                fill="url(#reachFill)"
-                strokeWidth={2}
-              />
-            </AreaChart>
           </ChartResponsive>
         </CardContent>
       </Card>

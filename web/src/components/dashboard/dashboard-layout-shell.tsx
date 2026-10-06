@@ -1,7 +1,16 @@
 "use client";
 
 import { LayoutGrid, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Children,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { Badge } from "@/components/ui/badge";
 import { CollapsibleDashboardModule } from "@/components/dashboard/collapsible-dashboard-module";
 import { SortableSection } from "@/components/dashboard/sortable-section";
@@ -17,12 +26,10 @@ import {
   SECTION_LABELS,
 } from "@/lib/dashboard-layout";
 
-export type DashboardSections = Partial<Record<DashboardSectionId, ReactNode>>;
-
 type ShellProps = {
   source: string;
   updatedLabel: string;
-  sections: DashboardSections;
+  children: ReactNode;
 };
 
 function moveSection(order: DashboardSectionId[], id: DashboardSectionId, dir: -1 | 1) {
@@ -35,12 +42,23 @@ function moveSection(order: DashboardSectionId[], id: DashboardSectionId, dir: -
   return copy;
 }
 
-export function DashboardLayoutShell({
-  source,
-  updatedLabel,
-  sections: sectionsProp,
-}: ShellProps) {
-  const sections = sectionsProp ?? {};
+function isSectionId(value: unknown): value is DashboardSectionId {
+  return typeof value === "string" && DEFAULT_SECTION_ORDER.includes(value as DashboardSectionId);
+}
+
+function sectionsFromChildren(children: ReactNode): Partial<Record<DashboardSectionId, ReactNode>> {
+  const out: Partial<Record<DashboardSectionId, ReactNode>> = {};
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) return;
+    const id = (child as ReactElement<{ id?: unknown }>).props.id;
+    if (!isSectionId(id)) return;
+    out[id] = (child as ReactElement<{ children?: ReactNode }>).props.children;
+  });
+  return out;
+}
+
+export function DashboardLayoutShell({ source, updatedLabel, children }: ShellProps) {
+  const sections = useMemo(() => sectionsFromChildren(children), [children]);
   const [editMode, setEditMode] = useState(false);
   const [order, setOrder] = useState<DashboardSectionId[]>(DEFAULT_SECTION_ORDER);
   const [dragId, setDragId] = useState<DashboardSectionId | null>(null);

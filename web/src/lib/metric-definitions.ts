@@ -10,20 +10,32 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
   total_plays: {
     title: "Total plays",
     description:
-      "Lifetime play count summed across every row in Play counts by series (curated hubs plus optional editorial series from series_plays.csv). For The Upload, portfolio total uses SoundCloud Stories track plays only—not artist mirror tracks in the playlist.",
-    source: "build_dashboard.py → sum(seriesPlayCounts portfolio plays)",
+      "Lifetime play count summed across flagship curated hub series only (Booth, Sound Advice, The Upload, Voice Notes albums). Editorial Stories sets in Curated hubs are excluded. For The Upload, portfolio total uses SoundCloud Stories track plays only—not artist mirror tracks in the playlist.",
+    source: "build_dashboard.py → overview_from_series_play_counts (excludes category editorial)",
   },
   total_plays_28d: {
     title: "Total plays (28d)",
     description:
-      "Rolling 28-day plays summed across Play counts by series (curated hubs). For The Upload, portfolio total uses soundcloud-stories track plays only—not artist mirror tracks in the playlist.",
-    source: "sum(seriesPlayCounts portfolio 28d); pipeline fetch_batched_hub_plays.py",
+      "Rolling 28-day plays summed across flagship curated hub series only (editorial sets excluded). For The Upload, portfolio total uses soundcloud-stories track plays only—not artist mirror tracks in the playlist.",
+    source: "overview_from_series_play_counts; pipeline fetch_batched_hub_plays.py",
   },
   total_likes: {
     title: "Total likes",
     description:
       "Lifetime likes summed across Play counts by series (SoundCloud public counters on curated hub rollups).",
     source: "sum(seriesPlayCounts.likesTotal)",
+  },
+  portfolio_attributed_signups: {
+    title: "Signups (attributed)",
+    description:
+      "Sum of first-touch attributed signups across flagship Stories series in the growth module (Sound Advice, The Booth, Voice Notes). Uses each series’ analysis window from its export or BigQuery run—not lifetime portfolio signups.",
+    source: "signupsResurrections.series[].summary.totalSignups",
+  },
+  portfolio_subscription_starts: {
+    title: "Subscription starts (attributed)",
+    description:
+      "Sum of first-touch attributed subscription chain starts (paid and trial) across flagship Stories series in the growth module. Uses each series’ analysis window when exports differ.",
+    source: "signupsResurrections.series[].summary.totalSubscriptions",
   },
   total_reach: {
     title: "Total reach",
@@ -127,8 +139,49 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
   portfolio_growth: {
     title: "Portfolio growth",
     description:
-      "Combined daily plays and reach summed across all product lines in kpi_timeseries.csv.",
+      "Legacy combined daily plays and reach from kpi_timeseries.csv (superseded by curated series growth in the growth charts module).",
     source: "kpi_timeseries.csv (aggregated in UI)",
+  },
+  curated_series_growth: {
+    title: "Cumulative plays since series start",
+    description:
+      "Modeled cumulative 30s+ plays for each curated hub from its launch date through the dashboard snapshot. The Upload counts soundcloud-stories tracks only.",
+    source: "build_dashboard.py → curatedSeriesGrowth (series_growth.py)",
+  },
+  attributed_signups: {
+    title: "Signups",
+    description:
+      "Distinct new accounts with a first-touch target-track play within ±1 day of Account Creation Succeeded.",
+    source: "fetch_signups_resurrections.py → segment_events + plays_audited",
+  },
+  attributed_resurrections: {
+    title: "Resurrections",
+    description:
+      "Distinct resurrected/reactivated users with first-touch target-track play within ±1 day of fan_growth_model status change.",
+    source: "fetch_signups_resurrections.py → fan_growth_model + plays_audited",
+  },
+  attributed_growth_events: {
+    title: "Signups + resurrections",
+    description: "New account signups plus resurrected/reactivated users attributed to the track in the window.",
+    source: "signups_resurrections_by_track.csv",
+  },
+  attributed_subscriptions: {
+    title: "Subscription starts",
+    description:
+      "Attributed subscription chain starts (paid and trial; listener or creator) with first-touch target-track play ±1 day.",
+    source: "Sound Advice Q2 export → signups_resurrections_by_track.csv",
+  },
+  attributed_trials: {
+    title: "Trials",
+    description:
+      "Attributed trial subscription starts (payment_type = trial) with first-touch target-track play ±1 day.",
+    source: "Sound Advice Q2 Subscriptions export (trial rows) → total_trials",
+  },
+  curated_series_lifetime_total: {
+    title: "Lifetime plays (curated series)",
+    description:
+      "Terminal cumulative plays on each growth curve, aligned with Play counts by series rollups.",
+    source: "curatedSeriesGrowth + seriesPlayCounts",
   },
   top_content_plays: {
     title: "Plays (28d)",
@@ -235,6 +288,8 @@ export const OVERVIEW_METRIC_KEYS: Record<string, string> = {
   "Total plays (28d)": "total_plays_28d",
   "Total likes": "total_likes",
   "Total reach": "total_reach",
+  "Signups (attributed)": "portfolio_attributed_signups",
+  "Subscription starts (attributed)": "portfolio_subscription_starts",
   "Reach (28d)": "reach_28d",
   "Active series": "active_series_overview",
   "Avg completion": "avg_completion",

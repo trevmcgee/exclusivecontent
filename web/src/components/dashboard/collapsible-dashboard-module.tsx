@@ -34,15 +34,9 @@ export function CollapsibleDashboardModule({
           aria-hidden
         />
       </button>
-      <div
-        className={cn(
-          "min-w-0 border-t border-border/60",
-          expanded ? "block p-4 sm:p-5" : "hidden",
-        )}
-        aria-hidden={!expanded}
-      >
-        {expanded ? children : null}
-      </div>
+      {expanded ? (
+        <div className="min-w-0 border-t border-border/60 p-4 sm:p-5">{children}</div>
+      ) : null}
     </div>
   );
 }

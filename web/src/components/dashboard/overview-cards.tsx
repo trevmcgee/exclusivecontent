@@ -1,12 +1,12 @@
-import { Activity, Headphones, Heart, Users } from "lucide-react";
+import { Activity, CreditCard, Headphones, Heart, UserPlus, Users } from "lucide-react";
 import { MetricLabel } from "@/components/dashboard/metric-help";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { DashboardData, SeriesPlayCount } from "@/lib/dashboard";
-import { portfolioOverviewFromSeries } from "@/lib/portfolio-overview";
+import type { DashboardData, SeriesPlayCount, SignupsResurrectionsData } from "@/lib/dashboard";
+import { portfolioGrowthTotals, portfolioOverviewFromSeries } from "@/lib/portfolio-overview";
 import { OVERVIEW_METRIC_KEYS } from "@/lib/metric-definitions";
 import { formatCompact } from "@/lib/utils";
 
-const icons = [Headphones, Activity, Heart, Users] as const;
+const icons = [Headphones, Activity, Heart, Users, UserPlus, CreditCard] as const;
 
 function formatMetric(value: number | null): string {
   return value != null ? formatCompact(value) : "—";
@@ -15,21 +15,29 @@ function formatMetric(value: number | null): string {
 export function OverviewCards({
   overview,
   seriesPlayCounts,
+  signupsResurrections,
 }: {
   overview: DashboardData["overview"];
   seriesPlayCounts?: SeriesPlayCount[];
+  signupsResurrections?: SignupsResurrectionsData;
 }) {
   const totals = portfolioOverviewFromSeries(seriesPlayCounts, overview);
+  const growth = portfolioGrowthTotals(signupsResurrections);
 
   const items = [
     { label: "Total plays", value: formatMetric(totals.totalPlays) },
     { label: "Total plays (28d)", value: formatMetric(totals.totalPlays28d) },
     { label: "Total likes", value: formatMetric(totals.totalLikes) },
     { label: "Total reach", value: formatMetric(totals.totalReach28d) },
+    { label: "Signups (attributed)", value: formatMetric(growth.totalSignups) },
+    {
+      label: "Subscription starts (attributed)",
+      value: formatMetric(growth.totalSubscriptionStarts),
+    },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {items.map((item, i) => {
         const Icon = icons[i];
         return (

@@ -32,7 +32,7 @@ export function SeriesPlayCountsTable({
   rows: SeriesPlayCount[];
   embeddedInModule?: boolean;
 }) {
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("curated_hub");
   const [query, setQuery] = useState("");
 
   const tableRows = useMemo(
@@ -63,16 +63,16 @@ export function SeriesPlayCountsTable({
         <CardHeader>
           <CardTitle>Play counts by series</CardTitle>
           <CardDescription>
-            Curated hubs (including Voice Notes albums) and optional editorial series from{" "}
-            <code className="text-xs">series_plays.csv</code>. Artist playlists roll up under Voice
-            Notes in Curated hubs. Sorted by 28-day plays, else lifetime.
+            Flagship curated hubs (including Voice Notes albums) drive portfolio KPIs. Editorial sets
+            are optional rows—use the Editorial filter. Artist playlists live under Voice Notes in
+            Curated hubs. Sorted by 28-day plays, else lifetime.
           </CardDescription>
         </CardHeader>
       ) : (
         <CardHeader className="pb-2 pt-4">
           <CardDescription>
-            Curated hub series and optional editorial rows from{" "}
-            <code className="text-xs">series_plays.csv</code>.
+            Flagship curated hubs match portfolio KPIs. Editorial Stories sets are listed separately
+            and do not roll into portfolio totals.
           </CardDescription>
         </CardHeader>
       )}

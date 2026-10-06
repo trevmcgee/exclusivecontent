@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-06T20:30:14Z",
+  "updatedAt": "2026-10-06T20:33:02Z",
   "source": "csv",
   "overview": {
     "totalPlays": 6272664,
@@ -81328,26 +81328,13 @@
         "analysisEnd": "2026-05-07",
         "hasData": true,
         "summary": {
-          "totalSignups": 2168,
-          "totalResurrections": 52980,
-          "totalSubscriptions": 756,
-          "totalTrials": 534,
-          "totalGrowthEvents": 55148
+          "totalSignups": 1084,
+          "totalResurrections": 26490,
+          "totalSubscriptions": 378,
+          "totalTrials": 267,
+          "totalGrowthEvents": 27574
         },
         "byTrack": [
-          {
-            "permalink": "Total",
-            "trackUrn": "",
-            "trackUrl": "https://soundcloud.com/Total",
-            "title": "Total",
-            "hubId": "sound_advice",
-            "publishedDate": null,
-            "signups": 1084,
-            "resurrections": 26490,
-            "subscriptions": 378,
-            "trials": 267,
-            "growthEvents": 27574
-          },
           {
             "permalink": "soundcloud-stories/sound-advice-two-friends",
             "trackUrn": "soundcloud:tracks:a5c8246c91dca399bed15e950b1e1301",

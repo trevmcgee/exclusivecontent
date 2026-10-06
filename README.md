@@ -2,7 +2,8 @@
 
 Account, Series and partner exclusives — one view of the KPIs that matter. Built with [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/) patterns, deployed on **GCP Cloud Run** via the soundcloud-labs template.
 
-**Live URL (after deploy):** `https://exclusivecontent.vibecloud.soundcloud.com`  
+**Live URL (after deploy):** `https://exclusivecontent.vibecloud-stage.soundcloud.com`  
+(Use the URL from the GitHub Actions **Print service URL** step — `*.vibecloud.soundcloud.com` without `-stage` is not routed and returns 404.)
 Confirm in GitHub Actions → **Print service URL**.
 
 ## Architecture

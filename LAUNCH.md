@@ -30,7 +30,7 @@ git remote set-url labs git@github.com:soundcloud-labs/exclusivecontent.git
 1. Open [Actions on soundcloud-labs/exclusivecontent](https://github.com/soundcloud-labs/exclusivecontent/actions)
 2. Wait for the green **Deploy to Cloud Run** run
 3. Open step **Print service URL**
-4. Visit **https://exclusivecontent.vibecloud.soundcloud.com** (sign in with @soundcloud.com)
+4. Visit **https://exclusivecontent.vibecloud-stage.soundcloud.com** (sign in with @soundcloud.com)
 
 ## Local preview (optional)
 

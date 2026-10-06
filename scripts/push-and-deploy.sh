@@ -22,7 +22,8 @@ if git push "$LABS_REMOTE" main; then
   echo "Deploy started. In ~5–10 min open:"
   echo "  https://github.com/soundcloud-labs/exclusivecontent/actions"
   echo "Then open the 'Print service URL' step, e.g.:"
-  echo "  https://exclusivecontent.vibecloud.soundcloud.com"
+  echo "  https://exclusivecontent.vibecloud-stage.soundcloud.com"
+  echo "(Confirm in Actions → Print service URL — non-stage host 404s if not in the URL map.)"
 else
   echo ""
   echo "Push to soundcloud-labs failed (access or auth)."

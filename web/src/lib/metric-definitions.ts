@@ -174,8 +174,8 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
   attributed_trials: {
     title: "Trials",
     description:
-      "Attributed trial subscription starts (payment_type = trial) with first-touch target-track play ±1 day.",
-    source: "Sound Advice Q2 Subscriptions export (trial rows) → total_trials",
+      "Trial subscription starts attributed to the track. Sound Advice: Looker export (payment_type = trial). The Booth: total_trial_starts from Data Insights dashboard CSV.",
+    source: "signups_resurrections series CSVs → total_trials",
   },
   curated_series_lifetime_total: {
     title: "Lifetime plays (curated series)",

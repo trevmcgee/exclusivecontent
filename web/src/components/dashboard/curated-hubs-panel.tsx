@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CuratedHub, CuratedHubTrack } from "@/lib/dashboard";
+import { VoiceNotesPanel } from "@/components/dashboard/voice-notes-panel";
+import type { CuratedHub, CuratedHubTrack, VoiceNotesData } from "@/lib/dashboard";
 import { formatCompact } from "@/lib/utils";
 
 function MetricCell({
@@ -66,25 +67,43 @@ function trackLikesLine(track: CuratedHubTrack, lifetimePrimary: boolean): strin
   return null;
 }
 
-export function CuratedHubsPanel({ hubs }: { hubs: CuratedHub[] }) {
+export function CuratedHubsPanel({
+  hubs,
+  voiceNotes,
+  embeddedInModule = false,
+}: {
+  hubs: CuratedHub[];
+  voiceNotes?: VoiceNotesData;
+  embeddedInModule?: boolean;
+}) {
   if (!hubs.length) return null;
 
   return (
-    <section className="space-y-4">
-      <div>
-        <h3 className="text-base font-semibold tracking-tight">Curated hubs</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Official playlists and album collections — expand a hub for track-level KPIs.
+    <div className="min-w-0 space-y-3">
+      {!embeddedInModule ? (
+        <div>
+          <h3 className="text-base font-semibold tracking-tight">Curated hubs</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Official playlists and album collections — expand a hub for track-level KPIs.
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {hubs.length} destinations — expand a hub for track-level KPIs and Voice Notes.
         </p>
-      </div>
-      <Card className="border-primary/15">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Hub directory</CardTitle>
-          <CardDescription>
-            {hubs.length} destinations · collapsed by default
-          </CardDescription>
-        </CardHeader>
-        <Accordion type="multiple" defaultValue={[]} className="px-5 pb-5">
+      )}
+      <Card className={embeddedInModule ? "border-border/60" : "border-primary/15"}>
+        {!embeddedInModule ? (
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Hub directory</CardTitle>
+            <CardDescription>{hubs.length} destinations · collapsed by default</CardDescription>
+          </CardHeader>
+        ) : null}
+        <Accordion
+          type="multiple"
+          defaultValue={[]}
+          className={embeddedInModule ? "px-4 pb-4" : "px-5 pb-5"}
+        >
           {hubs.map((hub) => {
             const lifetimePrimary = hubUsesLifetimePlays(hub);
             const headlinePlays = lifetimePrimary
@@ -153,10 +172,11 @@ export function CuratedHubsPanel({ hubs }: { hubs: CuratedHub[] }) {
                         audited 28-day metrics.
                       </p>
                     ) : null}
-                    {hub.id === "voice_notes_albums" ? (
+                    {hub.id === "voice_notes_albums" && voiceNotes ? (
+                      <VoiceNotesPanel data={voiceNotes} embedded />
+                    ) : hub.id === "voice_notes_albums" ? (
                       <p className="text-xs text-muted-foreground">
-                        Full track list lives in the Voice Notes tab. Hub totals roll up when
-                        per-track BigQuery metrics are present.
+                        Voice Notes masterlist not loaded in this snapshot.
                       </p>
                     ) : null}
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -226,6 +246,6 @@ export function CuratedHubsPanel({ hubs }: { hubs: CuratedHub[] }) {
           })}
         </Accordion>
       </Card>
-    </section>
+    </div>
   );
 }

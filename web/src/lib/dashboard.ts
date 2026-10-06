@@ -47,6 +47,8 @@ export type VoiceNoteTrack = {
   trackPermalink: string;
   tags: string[];
   plays28d: number | null;
+  playsTotal: number | null;
+  likesTotal: number | null;
   activeUsers28d: number | null;
   playsChangePct: number | null;
   playsTrend: Trend;
@@ -59,6 +61,8 @@ export type VoiceNotesPlaylist = {
   publicCount: number;
   latestPublished: string;
   plays28dTotal: number | null;
+  playsTotal: number | null;
+  likesTotal: number | null;
   activeUsers28dTotal: number | null;
   tracks: VoiceNoteTrack[];
 };
@@ -100,25 +104,47 @@ export type VoiceNotesData = {
   playlistCount: number;
   publicTracks: number;
   plays28dTotal: number | null;
+  playsTotal: number | null;
+  likesTotal: number | null;
   activeUsers28dTotal: number | null;
   hasMetrics: boolean;
   metricsSource?: string | null;
   playlists: VoiceNotesPlaylist[];
 };
 
+export type SeriesPlayCount = {
+  id: string;
+  name: string;
+  category: "editorial" | "voice_notes" | "curated_hub";
+  productLabel: string | null;
+  trackCount: number;
+  plays28d: number | null;
+  playsTotal: number | null;
+  likes28d?: number | null;
+  likesTotal?: number | null;
+  activeUsers28d: number | null;
+  playsChangePct: number | null;
+  playsTrend: Trend;
+  metricsSource: string | null;
+  status: string | null;
+};
+
 export type DashboardData = {
   updatedAt: string;
   source: string;
   overview: {
-    totalPlays28d: number;
-    totalReach28d: number;
-    activeSeries: number;
-    avgCompletionRate: number;
+    totalPlays?: number | null;
+    totalPlays28d?: number | null;
+    totalLikes?: number | null;
+    totalReach28d?: number | null;
+    activeSeries?: number;
+    avgCompletionRate?: number;
   };
   products: ProductBlock[];
   topContent: TopContentRow[];
   voiceNotes?: VoiceNotesData;
   curatedHubs?: CuratedHub[];
+  seriesPlayCounts?: SeriesPlayCount[];
 };
 
 function resolveDataPath(): string {

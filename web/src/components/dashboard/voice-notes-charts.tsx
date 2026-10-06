@@ -33,14 +33,19 @@ function weekKey(isoDate: string): string {
 }
 
 export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
+  const lifetime = data.metricsSource === "soundcloud_public" || data.playsTotal != null;
   const { topArtists, publishWeekly, catalogGrowth } = useMemo(() => {
     const topArtists = [...data.playlists]
-      .filter((p) => p.plays28dTotal !== null)
-      .sort((a, b) => (b.plays28dTotal ?? 0) - (a.plays28dTotal ?? 0))
+      .filter((p) => (lifetime ? p.playsTotal : p.plays28dTotal) != null)
+      .sort((a, b) => {
+        const av = lifetime ? (a.playsTotal ?? 0) : (a.plays28dTotal ?? 0);
+        const bv = lifetime ? (b.playsTotal ?? 0) : (b.plays28dTotal ?? 0);
+        return bv - av;
+      })
       .slice(0, 12)
       .map((p) => ({
         name: p.artistName.length > 22 ? `${p.artistName.slice(0, 20)}…` : p.artistName,
-        plays: p.plays28dTotal ?? 0,
+        plays: lifetime ? (p.playsTotal ?? 0) : (p.plays28dTotal ?? 0),
         tracks: p.trackCount,
       }));
 
@@ -63,7 +68,7 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
     });
 
     return { topArtists, publishWeekly, catalogGrowth };
-  }, [data.playlists]);
+  }, [data.playlists, lifetime]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
@@ -136,8 +141,10 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
       {topArtists.length > 0 ? (
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Top artists by plays (28d)</CardTitle>
-            <CardDescription>Playlist-level totals from supplied / estimated metrics</CardDescription>
+            <CardTitle>
+              Top artists by plays {lifetime ? "(lifetime)" : "(28d)"}
+            </CardTitle>
+            <CardDescription>Playlist-level totals from public counters or BigQuery</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartResponsive height={300}>
@@ -161,7 +168,10 @@ export function VoiceNotesCharts({ data }: { data: VoiceNotesData }) {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(value: number) => [formatCompact(value), "Plays (28d)"]}
+                  formatter={(value: number) => [
+                    formatCompact(value),
+                    lifetime ? "Plays (lifetime)" : "Plays (28d)",
+                  ]}
                 />
                 <Bar dataKey="plays" fill="hsl(20 100% 50%)" radius={[4, 4, 0, 0]} />
               </BarChart>

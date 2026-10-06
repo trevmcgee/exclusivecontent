@@ -33,10 +33,17 @@ function MetricDelta({ value, trend }: { value: number | null; trend: Trend }) {
   );
 }
 
-export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
+export function VoiceNotesPanel({
+  data,
+  embedded = false,
+}: {
+  data: VoiceNotesData;
+  embedded?: boolean;
+}) {
   const [query, setQuery] = useState("");
-  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(embedded);
   const showMetrics = data.hasMetrics;
+  const lifetimePrimary = data.metricsSource === "soundcloud_public" || data.playsTotal != null;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -49,7 +56,7 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
   }, [data.playlists, query]);
 
   return (
-    <div className="space-y-6">
+    <div className={cn("min-w-0 space-y-6", embedded && "space-y-4")}>
       {data.metricsSource === "portfolio_estimate" ? (
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="py-3 text-sm text-muted-foreground">
@@ -58,7 +65,16 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
           </CardContent>
         </Card>
       ) : null}
+      {data.metricsSource === "soundcloud_public" ? (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="py-3 text-sm text-muted-foreground">
+            Plays and likes are SoundCloud public lifetime counters. BigQuery export adds audited
+            28-day plays and active users when available.
+          </CardContent>
+        </Card>
+      ) : null}
 
+      {!embedded ? (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
@@ -71,13 +87,29 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              <MetricLabel metricKey="voice_notes_plays_28d" />
+              <MetricLabel
+                metricKey={lifetimePrimary ? "hub_plays_total" : "voice_notes_plays_28d"}
+              />
             </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
-            {data.plays28dTotal !== null ? formatCompact(data.plays28dTotal) : "—"}
+            {lifetimePrimary && data.playsTotal != null
+              ? formatCompact(data.playsTotal)
+              : data.plays28dTotal !== null
+                ? formatCompact(data.plays28dTotal)
+                : "—"}
           </CardContent>
         </Card>
+        {lifetimePrimary && data.likesTotal != null ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                <MetricLabel metricKey="hub_likes_total" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold">{formatCompact(data.likesTotal)}</CardContent>
+          </Card>
+        ) : null}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -97,6 +129,7 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
           <CardContent className="text-2xl font-bold">{data.playlistCount}</CardContent>
         </Card>
       </div>
+      ) : null}
 
       <VoiceNotesCharts data={data} />
 
@@ -146,9 +179,11 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
                         <span className="font-semibold">{playlist.artistName}</span>
                         <span className="text-xs font-normal text-muted-foreground">
                           {playlist.trackCount} tracks
-                          {showMetrics && playlist.plays28dTotal !== null
-                            ? ` · ${formatCompact(playlist.plays28dTotal)} plays`
-                            : null}
+                          {showMetrics && lifetimePrimary && playlist.playsTotal != null
+                            ? ` · ${formatCompact(playlist.playsTotal)} total plays`
+                            : showMetrics && playlist.plays28dTotal !== null
+                              ? ` · ${formatCompact(playlist.plays28dTotal)} plays (28d)`
+                              : null}
                         </span>
                       </div>
                     </AccordionTrigger>
@@ -161,28 +196,53 @@ export function VoiceNotesPanel({ data }: { data: VoiceNotesData }) {
                           >
                             <p className="text-sm font-medium leading-snug">{track.title}</p>
                             {showMetrics ? (
-                              <div className="mt-2 grid gap-2 text-xs sm:grid-cols-3">
-                                <div>
-                                  <p className="text-muted-foreground">Plays (28d)</p>
-                                  <p className="font-semibold tabular-nums">
-                                    {track.plays28d !== null ? formatCompact(track.plays28d) : "—"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Active users (28d)</p>
-                                  <p className="font-semibold tabular-nums">
-                                    {track.activeUsers28d !== null
-                                      ? formatCompact(track.activeUsers28d)
-                                      : "—"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Change</p>
-                                  <MetricDelta
-                                    value={track.playsChangePct}
-                                    trend={track.playsTrend}
-                                  />
-                                </div>
+                              <div className="mt-2 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                                {lifetimePrimary ? (
+                                  <>
+                                    <div>
+                                      <p className="text-muted-foreground">Plays (lifetime)</p>
+                                      <p className="font-semibold tabular-nums">
+                                        {track.playsTotal !== null
+                                          ? formatCompact(track.playsTotal)
+                                          : "—"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Likes (lifetime)</p>
+                                      <p className="font-semibold tabular-nums">
+                                        {track.likesTotal !== null
+                                          ? formatCompact(track.likesTotal)
+                                          : "—"}
+                                      </p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div>
+                                      <p className="text-muted-foreground">Plays (28d)</p>
+                                      <p className="font-semibold tabular-nums">
+                                        {track.plays28d !== null
+                                          ? formatCompact(track.plays28d)
+                                          : "—"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Active users (28d)</p>
+                                      <p className="font-semibold tabular-nums">
+                                        {track.activeUsers28d !== null
+                                          ? formatCompact(track.activeUsers28d)
+                                          : "—"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Change</p>
+                                      <MetricDelta
+                                        value={track.playsChangePct}
+                                        trend={track.playsTrend}
+                                      />
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             ) : null}
                             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

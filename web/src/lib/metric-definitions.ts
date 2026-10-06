@@ -7,11 +7,30 @@ export type MetricDefinition = {
 
 /** Central glossary for KPI labels shown in the dashboard UI. */
 export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
+  total_plays: {
+    title: "Total plays",
+    description:
+      "Lifetime play count summed across every row in Play counts by series (curated hubs plus optional editorial series from series_plays.csv).",
+    source: "build_dashboard.py → sum(seriesPlayCounts.playsTotal)",
+  },
   total_plays_28d: {
     title: "Total plays (28d)",
     description:
-      "Rolling 28-day play count summed across Account, Stories, Historias, partner exclusives, and Voice Notes in this snapshot.",
-    source: "overview.csv → total_plays_28d",
+      "Rolling 28-day plays summed across Play counts by series. When hub rows only have lifetime public counters, this may fall back to overview.csv until BigQuery 28-day export is wired.",
+    source: "sum(seriesPlayCounts.plays28d) or overview.csv → total_plays_28d",
+  },
+  total_likes: {
+    title: "Total likes",
+    description:
+      "Lifetime likes summed across Play counts by series (SoundCloud public counters on curated hub rollups).",
+    source: "sum(seriesPlayCounts.likesTotal)",
+  },
+  total_reach: {
+    title: "Total reach",
+    description:
+      "28-day distinct active users summed across series rows when exported; otherwise portfolio reach from overview.csv.",
+    formula: "COUNT(DISTINCT listener) over 28d window (per series export)",
+    source: "sum(seriesPlayCounts.activeUsers28d) or overview.csv → total_reach_28d",
   },
   reach_28d: {
     title: "Reach (28d)",
@@ -194,7 +213,10 @@ export function getMetricDefinition(key: string): MetricDefinition | undefined {
 
 /** Map overview card labels to definition keys. */
 export const OVERVIEW_METRIC_KEYS: Record<string, string> = {
+  "Total plays": "total_plays",
   "Total plays (28d)": "total_plays_28d",
+  "Total likes": "total_likes",
+  "Total reach": "total_reach",
   "Reach (28d)": "reach_28d",
   "Active series": "active_series_overview",
   "Avg completion": "avg_completion",

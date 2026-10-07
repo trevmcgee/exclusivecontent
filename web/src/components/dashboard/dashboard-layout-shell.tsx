@@ -116,7 +116,7 @@ export function DashboardLayoutShell({ source, updatedLabel, children }: ShellPr
         <div>
           <p className="text-sm font-medium uppercase tracking-widest text-primary">SoundCloud</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
-            Exclusive Content Dashboard
+            Original Content Dashboard
           </h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Account, Series and partner exclusives — one view of the KPIs that matter.

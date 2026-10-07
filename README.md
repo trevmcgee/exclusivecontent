@@ -1,4 +1,4 @@
-# Exclusive Content Dashboard (VibeCloud)
+# Original Content Dashboard (VibeCloud)
 
 Account, Series and partner exclusives — one view of the KPIs that matter. Built with [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/) patterns, deployed on **GCP Cloud Run** via the soundcloud-labs template.
 

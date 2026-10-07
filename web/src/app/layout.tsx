@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const title = "Exclusive Content Dashboard";
+const title = "Original Content Dashboard";
 const description =
   "Account, Series and partner exclusives — one view of the KPIs that matter.";
 

@@ -50,6 +50,10 @@ export function OverviewCards({
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold tracking-tight">{item.value}</div>
+              {(item.label === "Signups (attributed)" ||
+                item.label === "Subscription starts (attributed)") && (
+                <p className="mt-1 text-xs text-muted-foreground">Year to date</p>
+              )}
             </CardContent>
           </Card>
         );

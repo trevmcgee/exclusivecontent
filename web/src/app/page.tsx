@@ -23,9 +23,9 @@ export default function HomePage() {
           <p className="text-sm text-muted-foreground">
             Totals summed from flagship curated hub series (Booth, Sound Advice, The Upload, Voice
             Notes albums)—not editorial Stories sets. Lifetime plays/likes use public counters;
-            28-day plays and reach use BigQuery. Signups and subscription starts are attributed
-            totals from the growth module (per-series analysis windows). Run pipeline REFRESH to
-            update.
+            28-day plays and reach use BigQuery. Signups and subscription starts are year to date
+            (YTD) attributed totals from the growth module—summed across flagship series using
+            each series’ export or analysis window. Run pipeline REFRESH to update.
           </p>
           <OverviewCards
             overview={data.overview}

@@ -28,13 +28,13 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
   portfolio_attributed_signups: {
     title: "Signups (attributed)",
     description:
-      "Sum of first-touch attributed signups across flagship Stories series in the growth module (Sound Advice, The Booth, Voice Notes). Uses each series’ analysis window from its export or BigQuery run—not lifetime portfolio signups.",
+      "Year to date (YTD): sum of first-touch attributed signups across flagship Stories series in the growth module (Sound Advice, The Booth, Voice Notes). Uses each series’ analysis window from its export or BigQuery run—not lifetime portfolio signups.",
     source: "signupsResurrections.series[].summary.totalSignups",
   },
   portfolio_subscription_starts: {
     title: "Subscription starts (attributed)",
     description:
-      "Sum of first-touch attributed subscription chain starts (paid and trial) across flagship Stories series in the growth module. Uses each series’ analysis window when exports differ.",
+      "Year to date (YTD): sum of first-touch attributed subscription chain starts (paid and trial) across flagship Stories series in the growth module. Uses each series’ analysis window when exports differ.",
     source: "signupsResurrections.series[].summary.totalSubscriptions",
   },
   total_reach: {

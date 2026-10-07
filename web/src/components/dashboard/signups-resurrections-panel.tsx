@@ -177,9 +177,20 @@ export function SignupsResurrectionsPanel({
           <CardHeader className="pb-2">
             <CardTitle className="text-base">{selected?.name ?? "Series"}</CardTitle>
             <CardDescription>
-              No attributed growth data for this series yet. Import a CSV to{" "}
-              <code className="text-xs">csv/signups_resurrections/{selected?.id}_by_track.csv</code>{" "}
-              and rebuild the dashboard, or run BigQuery fetch for this hub.
+              {selected?.id === "voice_notes" ? (
+                <>
+                  Import YTD exports with{" "}
+                  <code className="text-xs">import_voice_notes_ytd_exports.py</code>, or run{" "}
+                  <code className="text-xs">build_voice_notes_attribution.py</code> for BigQuery
+                  first-touch attribution.
+                </>
+              ) : (
+                <>
+                  No attributed growth data for this series yet. Import a CSV to{" "}
+                  <code className="text-xs">csv/signups_resurrections/{selected?.id}_by_track.csv</code>{" "}
+                  and rebuild the dashboard, or run BigQuery fetch for this hub.
+                </>
+              )}
             </CardDescription>
           </CardHeader>
         </Card>
